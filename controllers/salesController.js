@@ -22,13 +22,37 @@ exports.createHarvestSale = async (req, res) => {
 
 exports.getSales = async (req, res) => {
     try {
-        const [result] = await db.query(`SELECT * FROM harvest_sales ORDER BY created_at DESC`);
+        const [result] = await db.query(`
+            SELECT 
+                hs.id AS sale_id, 
+                hs.user_id, 
+                hs.price, 
+                hs.province, 
+                hs.bowl_weight, 
+                hs.oval_weight, 
+                hs.corner_weight, 
+                hs.broken_weight, 
+                hs.created_at, 
+                hs.status AS sale_status,
+                hs.proof_photo,
+                hs.appointment_date,
+                u.id AS user_id, 
+                u.name AS user_name, 
+                u.email AS user_email, 
+                u.no_telp AS user_phone,
+                u.location AS user_location
+            FROM harvest_sales hs
+            JOIN users u ON hs.user_id = u.id
+            ORDER BY hs.created_at DESC
+        `);
+
         res.json(result);
     } catch (error) {
         console.error('Error fetching sales:', error);
         res.status(500).json({ error: 'Gagal dalam mengambil data penjualan.' });
     }
 };
+
 
 exports.getSalesById = async (req, res) => {
     const { id } = req.params;
@@ -51,7 +75,9 @@ exports.updateSaleStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (![0, 1, 2, 3, 4, 5].includes(status)) {
+    console.log(id, status)
+
+    if (![0, 1, 2, 3, 4, 5, 6].includes(status)) {
         return res.status(400).json({ message: "Status tidak valid." });
     }
 
